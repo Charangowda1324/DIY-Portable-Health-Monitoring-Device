@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Dashboard | HealthSync</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2A6DFF;
+            --primary-dark: #1A56DB;
+            --secondary: #00D4AA;
+            --danger: #FF4757;
+            --warning: #FFA502;
+            --success: #2ED573;
+            --dark: #1E293B;
+            --light: #F8FAFC;
+            --gray: #64748B;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .dashboard-container {
+            padding: 100px 20px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--primary);
+        }
+        
+        .result-title {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .health-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+        
+        .form-control {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(42, 109, 255, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(42, 109, 255, 0.4);
+        }
+        
+        .vital-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .vital-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .vital-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .vital-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(42, 109, 255, 0.1);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+        }
+        
+        .vital-icon i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .vital-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .vital-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .visualization-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-bottom: 30px;
+        }
+        
+        .health-status {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            text-align: center;
+            flex: 1;
+            padding: 15px;
+        }
+        
+        .status-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .status-normal {
+            color: var(--success);
+        }
+        
+        .status-warning {
+            color: var(--warning);
+        }
+        
+        .status-danger {
+            color: var(--danger);
+        }
+        
+        .status-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .recommendations {
+            background: rgba(42, 109, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .recommendations-title {
+            color: var(--dark);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .recommendations-list {
+            padding-left: 20px;
+        }
+        
+        .recommendations-list li {
+            margin-bottom: 10px;
+            color: var(--gray);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 80px 15px 20px;
+            }
+            
+            .vital-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .health-status {
+                flex-direction: column;
+            }
+            
+            .status-item {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-heartbeat me-2"></i>HealthSync
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-primary" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        {% block content %}
+        
+        <!-- Prediction Result -->
+        {% if result %}
+        <div class="result-card">
+            <h3 class="result-title">Health Assessment Result</h3>
+            <div class="result-value">{{ result }}</div>
+        </div>
+        {% endif %}
+        
+        <div class="row">
+            <div class="col-lg-5">
+                <!-- Health Input Form -->
+                <div class="health-form">
+                    <h3 class="form-title">Health Monitoring</h3>
+                    
+                    <form action="{{ url_for('predictPage') }}" method="POST">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="age" name="age" min="20" max="100" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="sex" class="form-label">Gender</label>
+                                <select class="form-control" id="sex" name="sex" required>
+                                    <option disabled selected value>Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="Temperature" class="form-label">Temperature (°C)</label>
+                                <input type="text" class="form-control" id="Temperature" value="{{ temp }}" name="Temperature" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="bp" class="form-label">Blood Pressure</label>
+                                <input type="number" class="form-control" value="{{ bp }}" id="bp" name="bp" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="oxy" class="form-label">Oxygen (%)</label>
+                                <input type="number" class="form-control" value="{{ oxy }}" id="oxy" name="oxy" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="heart" class="form-label">Heart Beat (BPM)</label>
+                                <input type="number" class="form-control" value="{{ hb }}" id="heart" name="heart" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label for="ecg" class="form-label">ECG Reading</label>
+                                <input type="number" class="form-control" id="ecg" value="{{ ecg }}" name="ecg" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-chart-line me-2"></i> Analyze Health Status
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Current Vitals Display -->
+                <div class="vital-cards">
+                    <div class="vital-card">
+                        <div class="vital-icon">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="vital-value" id="displayBp">{{ bp or '--' }}</div>
+                        <div class="vital-label">Blood Pressure</div>
+                    </div>
+                    
+                    <div class="vital-card">
+                        <div class="vital-icon">
+                            <i class="fas fa-lungs"></i>
+                        </div>
+                        <div class="vital-value" id="displayOxy">{{ oxy or '--' }}%</div>
+                        <div class="vital-label">Oxygen Level</div>
+                    </div>
+                    
+                    <div class="vital-card">
+                        <div class="vital-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="vital-value" id="displayHeart">{{ hb or '--' }}</div>
+                        <div class="vital-label">Heart Rate</div>
+                    </div>
+                    
+                    <div class="vital-card">
+                        <div class="vital-icon">
+                            <i class="fas fa-thermometer-half"></i>
+                        </div>
+                        <div class="vital-value" id="displayTemp">{{ temp or '--' }}°C</div>
+                        <div class="vital-label">Temperature</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-7">
+                <!-- Health Visualizations -->
+                <div class="visualization-section">
+                    <h3 class="section-title">Health Metrics Visualization</h3>
+                    
+                    <div class="chart-container">
+                        <canvas id="vitalsChart"></canvas>
+                    </div>
+                    
+                    <div class="health-status">
+                        <div class="status-item">
+                            <div class="status-value status-normal" id="bpStatus">Normal</div>
+                            <div class="status-label">Blood Pressure</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value status-normal" id="oxyStatus">Good</div>
+                            <div class="status-label">Oxygen Level</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value status-normal" id="heartStatus">Normal</div>
+                            <div class="status-label">Heart Rate</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value status-normal" id="tempStatus">Normal</div>
+                            <div class="status-label">Temperature</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ECG Visualization -->
+                <div class="visualization-section">
+                    <h3 class="section-title">ECG Rhythm Analysis</h3>
+                    <div class="chart-container">
+                        <canvas id="ecgChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Health Recommendations -->
+                <div class="recommendations">
+                    <h4 class="recommendations-title">Health Recommendations</h4>
+                    <ul class="recommendations-list">
+                        <li>Maintain a balanced diet rich in fruits and vegetables</li>
+                        <li>Engage in at least 30 minutes of physical activity daily</li>
+                        <li>Ensure 7-9 hours of quality sleep each night</li>
+                        <li>Stay hydrated by drinking 8-10 glasses of water daily</li>
+                        <li>Monitor your vital signs regularly for any changes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endblock content %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update displayed values when form inputs change
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update vital cards when input values change
+            const bpInput = document.getElementById('bp');
+            const oxyInput = document.getElementById('oxy');
+            const heartInput = document.getElementById('heart');
+            const tempInput = document.getElementById('Temperature');
+            
+            if (bpInput) {
+                bpInput.addEventListener('input', function() {
+                    document.getElementById('displayBp').textContent = this.value;
+                    updateStatus('bpStatus', this.value, 90, 120);
+                });
+            }
+            
+            if (oxyInput) {
+                oxyInput.addEventListener('input', function() {
+                    document.getElementById('displayOxy').textContent = this.value + '%';
+                    updateStatus('oxyStatus', this.value, 95, 100);
+                });
+            }
+            
+            if (heartInput) {
+                heartInput.addEventListener('input', function() {
+                    document.getElementById('displayHeart').textContent = this.value;
+                    updateStatus('heartStatus', this.value, 60, 100);
+                });
+            }
+            
+            if (tempInput) {
+                tempInput.addEventListener('input', function() {
+                    document.getElementById('displayTemp').textContent = this.value + '°C';
+                    updateStatus('tempStatus', this.value, 36.1, 37.2);
+                });
+            }
+            
+            function updateStatus(elementId, value, min, max) {
+                const element = document.getElementById(elementId);
+                if (!element) return;
+                
+                if (value < min) {
+                    element.textContent = 'Low';
+                    element.className = 'status-value status-warning';
+                } else if (value > max) {
+                    element.textContent = 'High';
+                    element.className = 'status-value status-danger';
+                } else {
+                    element.textContent = 'Normal';
+                    element.className = 'status-value status-normal';
+                }
+            }
+            
+            // Initialize charts
+            initializeCharts();
+        });
+        
+        function initializeCharts() {
+            // Vitals Chart
+            const vitalsCtx = document.getElementById('vitalsChart').getContext('2d');
+            const vitalsChart = new Chart(vitalsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Blood Pressure', 'Oxygen Level', 'Heart Rate', 'Temperature'],
+                    datasets: [{
+                        label: 'Your Values',
+                        data: [{{ bp or 0 }}, {{ oxy or 0 }}, {{ hb or 0 }}, {{ temp or 0 }}],
+                        backgroundColor: [
+                            'rgba(42, 109, 255, 0.7)',
+                            'rgba(0, 212, 170, 0.7)',
+                            'rgba(255, 71, 87, 0.7)',
+                            'rgba(255, 165, 2, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(42, 109, 255)',
+                            'rgb(0, 212, 170)',
+                            'rgb(255, 71, 87)',
+                            'rgb(255, 165, 2)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Normal Range Avg',
+                        data: [110, 98, 72, 36.6],
+                        backgroundColor: 'rgba(200, 200, 200, 0.5)',
+                        borderColor: 'rgba(150, 150, 150, 1)',
+                        borderWidth: 1,
+                        type: 'line',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            
+            // ECG Chart
+            const ecgCtx = document.getElementById('ecgChart').getContext('2d');
+            const ecgData = [];
+            for (let i = 0; i < 100; i++) {
+                ecgData.push(Math.sin(i * 0.2) * 0.5 + Math.random() * 0.1);
+            }
+            
+            const ecgChart = new Chart(ecgCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 100}, (_, i) => i),
+                    datasets: [{
+                        label: 'ECG Signal',
+                        data: ecgData,
+                        borderColor: 'rgb(42, 109, 255)',
+                        backgroundColor: 'rgba(42, 109, 255, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: false
+                        },
+                        y: {
+                            display: false
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: 0
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
